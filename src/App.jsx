@@ -1,32 +1,56 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import TodoList from "./TodoList";
 
-export const useCounter = () => {
-  let [count, setCount] = useState(0);
-  let [won, setWon] = useState(false);
+import "./App.css";
 
-  const increase = (inc) => {
-    setCount((count) => count + inc);
+const App = () => {
+  const [todos, setTodos] = useState([]);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {},
+  });
+
+  const onSubmit = (values) => {
+    const todo = {
+      message: values.todo,
+      completed: false,
+      createdAt: Date.now(),
+    };
+
+    setTodos(() => [todo, ...todos]);
   };
 
   useEffect(() => {
-    if (count == 3) {
-      setWon(true);
-    }
-  }, [count]);
+    console.log(todos);
+  }, [todos]);
 
-  return { count, won, increase };
-};
-
-const App = () => {
-  const { count, increase, won } = useCounter();
+  console.log(errors.todo);
 
   return (
-    <div>
-      app: {count}
-      <button onClick={() => increase(1)}>+1</button>
-      <button onClick={() => increase(5)}>+5</button>
-      <div style={{ border: "1px solid red" }}>{won.toString()}</div>
-    </div>
+    <>
+      <h1>Todos</h1>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <input
+          type="text"
+          {...register("todo", {
+            required: true,
+            minLength: {
+              value: 3,
+              message: "Todo is too short",
+            },
+          })}
+        />
+        {errors.todo && <div>{errors.todo.message}</div>}
+        <button type="submit">Add</button>
+      </form>
+
+      <TodoList todos={todos} setTodos={setTodos} />
+    </>
   );
 };
 
